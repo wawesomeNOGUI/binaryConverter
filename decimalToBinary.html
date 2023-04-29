@@ -1,0 +1,98 @@
+<html>
+<body>
+    <center>
+    <b>Decimal Number:</b>
+    <br>
+    <input id="decimal" oninput="convert();"></input>
+    <br>
+    <b>Binary Representation</b>
+    <div style="height: 20" id="outputBinary"></div>
+
+    <b>Hexadecimal Representation</b>
+    <!--contentEditable="true" oninput="convertFromHex();"-->
+    <div style="height: 20" id="outputHex"></div>
+
+    <b>Two's Complement</b>
+    <div style="height: 20" id="outputTwosComplement"></div>
+
+    <b>Bits Needed To Store This Number</b>
+    <div style="height: 20" id ="bitsNeeded"></div>
+
+    </center>
+    
+    <script>
+        function binary(x) {
+            var i = 0;
+            var odd = false;
+            var binaryString = "";
+
+            for (var count = 0; x > 0; count++) {
+                i = x % 2;
+
+                binaryString = i + binaryString;
+                x = Math.floor(x / 2);
+            }
+
+            var c = 4 - binaryString.length % 4;
+            if(c != 4) {
+                for(;c > 0; c--) {
+                    binaryString = "0" + binaryString;
+                }
+            }
+                
+            document.getElementById("outputBinary").textContent = binaryString;
+            return binaryString;
+        }
+
+        function hex(s) {
+            var hexString = "";
+            var fourBitValue = 0;
+            var c = 0;
+
+            for (var i = s.length; i > 0; i--) {
+
+                if (i % 4 == 0) {
+                    fourBitValue += 1 * s[i-1];
+                } else {
+                    fourBitValue += Math.pow(2 * s[i-1], (s.length-i)%4);
+                }
+
+                if (i % 4 == 1) {
+                    //console.log(fourBitValue);
+                    hexString = fourBitValue.toString(16) + hexString;
+                    //console.log(hexString);
+                    fourBitValue = 0;
+                }
+            }
+
+            document.getElementById("outputHex").textContent = hexString.toUpperCase();
+        }
+
+        function twosComplement(x, b) {
+            // flip bits and add one
+            // we'll just use JS built in functions
+            // unsigned right shift zero to force number to be treated as unsigned representation
+
+            document.getElementById("outputTwosComplement").textContent = (-x >>> 0 ).toString(2).slice(32-b);
+        }
+
+        function bitsNeeded(n) {
+            var b = 0;
+            for (var i = 0; i < n; i += Math.pow(2, b++)){};
+            document.getElementById("bitsNeeded").textContent = b;
+            return b;
+        }
+
+        function convert() {
+            var decimal = Number(document.getElementById("decimal").value);
+            var binaryString = binary(decimal);
+            var binStrLength = binaryString.length;
+            bitsNeeded(decimal);
+            twosComplement(decimal, binStrLength);
+            hex(binaryString);
+
+            
+        }
+    </script>
+</body>
+</html>
