@@ -44,6 +44,31 @@
             sel.addRange(range)
         }
 
+        function getCaretPosition(editableDiv) {
+            var caretPos = 0,
+                sel, range;
+            if (window.getSelection) {
+                sel = window.getSelection();
+                if (sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                if (range.commonAncestorContainer.parentNode == editableDiv) {
+                    caretPos = range.endOffset;
+                }
+                }
+            } else if (document.selection && document.selection.createRange) {
+                range = document.selection.createRange();
+                if (range.parentElement() == editableDiv) {
+                var tempEl = document.createElement("span");
+                editableDiv.insertBefore(tempEl, editableDiv.firstChild);
+                var tempRange = range.duplicate();
+                tempRange.moveToElementText(tempEl);
+                tempRange.setEndPoint("EndToEnd", range);
+                caretPos = tempRange.text.length;
+                }
+            }
+            return caretPos;
+         }
+
         // To allow users to input different representaions we'll convert the input to decimal first
         // then run the regular set of conversion functions.
 
@@ -98,15 +123,20 @@
         }
 
         // takes binary string
-        function twosComplement(s) {
+        function twosComplement(s, addLeadingZeroes = true) {
             s = s.replace(/\s+/g, '');
 
             // we can just use JS built in functions, but they only do 32-bit
             // unsigned right shift zero to force number to be treated as unsigned representation 
             // return (-x >>> 0 ).toString(2).slice(32-b-1);
 
-            var twosCompStr = "0000" + s;
-
+            var twosCompStr;
+            if (addLeadingZeroes) {
+                twosCompStr = "0000" + s;
+            } else {
+                twosCompStr = s;
+            }
+             
             // flip bits
             for (var i = 0; i < twosCompStr.length; i++) {
                 if (twosCompStr[i] == "1") {
@@ -155,9 +185,10 @@
         }
 
         function twosCompToDecimal() {
-            var binString = twosComplement(document.getElementById("outputTwosComplement").textContent);
-            binString = binString.replace(/\s+/g, '');
-            document.getElementById("decimal").textContent = parseInt(binString, 2);
+            var twosCompString = twosComplement(document.getElementById("outputTwosComplement").textContent, false);
+            twosCompString = twosCompString.replace(/\s+/g, '');
+            console.log(twosCompString)
+            document.getElementById("decimal").textContent = parseInt(twosCompString, 2);
         }
 
         // ==================call these functions oninput==================
@@ -180,12 +211,12 @@
             convert('outputTwosComplement');
         }        
 
+        var prevCursorPos = 0;
         function convert(editing) {
             var decimal = Number(document.getElementById("decimal").textContent);
             var binaryString = binary(decimal);
             
             // don't replace text of conversion output user is editing
-            // it makes the cursor be annoying if you do
             if (editing != "outputBinary") {
                 document.getElementById("outputBinary").textContent = binaryString.replace(/(.{4})/g,"$1 ");
             }
@@ -203,6 +234,7 @@
             }      
             
             // format user's text input as they write
+            var cursorPos = getCaretPosition(document.activeElement);
             document.activeElement.textContent = document.activeElement.textContent.replace(/\s+/g, '');
 
             if (editing == "outputBinary" || editing == "outputTwosComplement") {
@@ -211,8 +243,13 @@
                 document.activeElement.textContent = document.activeElement.textContent.replace(/(.{2})/g,"$1 ");
             }
 
-            // reset user's cursor to end of text input
-            setCursor(document.activeElement, document.activeElement.textContent.length);
+            // reset user's cursor to where they were last typing
+            if (document.activeElement.textContent[cursorPos-1] == ' ' && cursorPos+1 <= document.activeElement.textContent.length && prevCursorPos < cursorPos) {
+                cursorPos++;
+            }
+            
+            setCursor(document.activeElement, cursorPos);
+            prevCursorPos = cursorPos;
         }
     </script>
 </body>
