@@ -187,7 +187,6 @@
         function twosCompToDecimal() {
             var twosCompString = twosComplement(document.getElementById("outputTwosComplement").textContent, false);
             twosCompString = twosCompString.replace(/\s+/g, '');
-            console.log(twosCompString)
             document.getElementById("decimal").textContent = parseInt(twosCompString, 2);
         }
 
@@ -211,7 +210,7 @@
             convert('outputTwosComplement');
         }        
 
-        var prevCursorPos = 0;
+        var deletedChar = false;
         function convert(editing) {
             var decimal = Number(document.getElementById("decimal").textContent);
             var binaryString = binary(decimal);
@@ -244,13 +243,19 @@
             }
 
             // reset user's cursor to where they were last typing
-            if (document.activeElement.textContent[cursorPos-1] == ' ' && cursorPos+1 <= document.activeElement.textContent.length && prevCursorPos < cursorPos) {
+            if (document.activeElement.textContent[cursorPos-1] == ' ' && cursorPos+1 <= document.activeElement.textContent.length && !deletedChar) {
                 cursorPos++;
             }
             
             setCursor(document.activeElement, cursorPos);
-            prevCursorPos = cursorPos;
+            deletedChar = false;
         }
+
+        window.addEventListener("keydown", function(e){
+            if (e.code == "Delete" || e.code == "Backspace") {
+                deletedChar = true;
+            }
+        });
     </script>
 </body>
 </html>
