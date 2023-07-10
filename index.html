@@ -1190,11 +1190,6 @@
         accumulator field of an XCT and then extracting 6 bits -- the low two 
         bits of the XCT opcode are the right thing."  "What randomness!"
         </p><p>
-        <b>RAPE</b> v. To (metaphorically) screw someone or something, 
-        violently. Usage: often used in describing file-system damage.  
-        "So-and-so was running a program that did absolute disk I/O and ended up
-         raping the master directory."
-        </p><p>
         <b>RAVE</b> (WPI) v. 1. To persist in discussing a specific subject.  2.
          To speak authoritatively on a subject about which one knows very 
         little.  3. To complain to a person who is not in a position to correct 
@@ -1679,12 +1674,37 @@
             // pick random entry
             var entries = document.getElementById('jargonFile').getElementsByTagName("b");
 
-            console.log(entries[Math.floor(Math.random()*entries.length)]);
+            // console.log(entries[Math.floor(Math.random()*entries.length)]);
             var randEntry = entries[Math.floor(Math.random()*entries.length)];
-            console.log(randEntry.nextSibling)
 
             document.getElementById("definitionOfTheDay").innerText = randEntry.innerText;
-            document.getElementById("definitionOfTheDay").innerText += "\n" + randEntry.nextSibling.nodeValue;           
+
+            var count = 0;
+            for (var i = randEntry.nextSibling; ; i = i.nextSibling) {
+                count ++;
+                if (count > 5) {
+                    break;
+                }
+
+                if (i == null) {
+                    i = randEntry.parentElement;
+                    i = i.nextElementSibling;
+                    //console.log(i)
+                }
+
+                if (i.children != undefined && i.children[0] != undefined) {
+                    console.log(i.children[0])
+                    if (i.children[0].tagName == "B") {
+                        break;
+                    }
+                }
+                
+                if (i.nodeValue != null) {
+                    document.getElementById("definitionOfTheDay").innerText += "\n" + i.nodeValue;
+                } else if (i.innerText != null) {
+                    document.getElementById("definitionOfTheDay").innerText += "\n" + i.innerText;
+                }
+            }
         }
         getJargonDef();
 
